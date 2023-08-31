@@ -7,7 +7,6 @@ import envs from '../utilities/envs';
 import UserModel, { UserDocument } from '../api/user/user.model';
 
 const refreshTime = 5 * 24 * 60 * 60 * 1000; // 5 days
-
 const authenticate: RequestHandler = async (req, res, next) => {
     // Extract the 'access-token' and 'refresh-token' from the cookies of the request
     const { 'access-token': accessToken, 'refresh-token': refreshToken } = req.cookies;
@@ -39,7 +38,9 @@ const authenticate: RequestHandler = async (req, res, next) => {
             res.cookie('access-token', '', cookieOptions.default).cookie('refresh-token', '', cookieOptions.default);
             return next(error);
         }
-    } else {
+    }
+
+    if (payload) {
         // If the payload exists, find the user in the database based on the userId and role
         const user: UserDocument | null = await UserModel.findOne({ userId: payload.userId, role: payload.role });
 
