@@ -26,12 +26,12 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan('dev'));
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/auth', authRoute);
 app.use((_req, res, next) => {
     res.set('Access-Control-Allow-Origin', '*');
     next();
 });
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/auth', authRoute);
 app.use(authenticate);
 app.use('/stores', storeRoute);
 app.use('/users', userRoute);
