@@ -36,6 +36,7 @@ npm run build
 
 ## Run the Production Server
 
+You must compile the project first (production) before running the server
 To run the server, execute the command below:
 
 ```sh
