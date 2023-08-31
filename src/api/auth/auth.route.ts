@@ -16,7 +16,7 @@ const router = Router();
  *      content:
  *        application/json:
  *          schema:
- *            ref: '#/components/schemas/UserCredentials'
+ *            $ref: '#/components/schemas/UserCredentials'
  *    responses:
  *      204:
  *        description: User logged in succesfully
