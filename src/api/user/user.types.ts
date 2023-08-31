@@ -26,3 +26,7 @@ export type UserDetails = {
     lastName: string,
     extensionName?: string
 }
+
+export type UserQuery = {
+    userId: string;
+}
