@@ -1,12 +1,15 @@
+import { admin, owner } from 'middlewares/authorize';
+import { createStore, deleteStore, getStores, updateStore } from './store.controller';
 import { Router } from 'express';
 import asyncHandler from 'middlewares/asynchronousHandler';
-import { createStore, deleteStore, getStores, updateStore } from './store.controller';
 
 const router = Router();
 
-router.get('/', asyncHandler(getStores));
-
 router.post('/', asyncHandler(createStore));
+
+router.use(admin, owner);
+
+router.get('/', asyncHandler(getStores));
 
 router.patch('/', asyncHandler(updateStore));
 
