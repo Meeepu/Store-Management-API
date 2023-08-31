@@ -1,12 +1,14 @@
 import { Document, model, Schema, Types } from 'mongoose';
 import { UserDocument } from '../user/user.model';
+import generateId from '../../utilities/idGenerator';
 
 const storeSchema = new Schema(
     {
         storeId: {
             type: String,
             required: [true, 'Store ID is required'],
-            unique: true
+            unique: true,
+            default: generateId
         },
         owner: {
             type: Types.ObjectId,

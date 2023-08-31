@@ -1,12 +1,14 @@
 import { hashSync } from 'bcrypt';
 import { Document, model, Schema } from 'mongoose';
+import generateId from '../../utilities/idGenerator';
 
 const userSchema = new Schema(
     {
         userId: {
             type: String,
             required: [true, 'User ID is required'],
-            unique: true
+            unique: true,
+            default: generateId
         },
         name: {
             first: {
