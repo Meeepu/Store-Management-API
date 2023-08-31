@@ -8,7 +8,7 @@ export const updateDetails: RequestHandler = async (req: Request<{}, {}, Partial
 
     const { firstName, middleName, lastName, extensionName } = req.body;
 
-    const details: User = {} as User;
+    const details: User = { name: {} } as User;
     if (firstName) details.name.first = firstName;
     if (middleName) details.name.middle = middleName;
     if (lastName) details.name.last = lastName;

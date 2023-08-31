@@ -52,6 +52,22 @@ export enum UserRoles {
     USER = 'user'
 }
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    UserCredentials:
+ *      type: object
+ *      required:
+ *        - email
+ *        - password
+ *      properties:
+ *        email:
+ *          type: string
+ *          format: email
+ *        password:
+ *          type: string
+ */
 export interface User {
     userId: string;
     name: {

@@ -1,45 +1,48 @@
 import { RequestHandler, Request } from 'express';
-import { StoreCreate, StoreQuery, StoreUpdate } from './store.types';
-import { Forbidden, Unauthorized, UnprocessableEntity } from '../../utilities/errors';
+import { StoreCreate, StoreQuery } from './store.types';
+import { Forbidden, UnprocessableEntity } from '../../utilities/errors';
 import { UserRoles } from '../user/user.model';
-import StoreModel, { Store, StorePopulatedDocument } from './store.model';
+import StoreModel, { Store } from './store.model';
 
-export const getStores: RequestHandler = async (req, res) => {
-    if (!req.user) throw new Unauthorized();
+export const getStore: RequestHandler = async (req, res) => {
+    const { storeId } = req.params as StoreQuery;
+    if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
-    const { storeId } = req.query as StoreQuery;
-
-    let stores: StorePopulatedDocument[] | StorePopulatedDocument | null;
-
-    if (req.user.role === UserRoles.ADMIN) {
-        stores = storeId
-            ? await StoreModel.findById(storeId).populate('owner')
-            : await StoreModel.find().populate('owner');
-    } else {
-        stores = req.store ? req.store : await StoreModel.find({ owner: req.user._id }, { owner: 0 });
+    if (req.user?.role === UserRoles.ADMIN || req.store) {
+        const store = req.store || (await StoreModel.findOne({ storeId }).populate('owner').lean().exec());
+        return res.json(store);
     }
 
-    res.json(stores);
+    throw new Forbidden();
+};
+
+export const getStores: RequestHandler = async (req, res) => {
+    if (req.user?.role === UserRoles.ADMIN || req.store) {
+        const query = req.store ? { owner: req.user?._id } : {};
+        const stores = await StoreModel.find(query).populate('owner').lean().exec();
+        
+        return res.json(stores);
+    }
+
+    throw new Forbidden();
 };
 
 export const createStore: RequestHandler = async (req: Request<{}, {}, StoreCreate>, res) => {
-    if (!req.user) throw new Unauthorized();
-
     const { name, addressLine, city, province, region } = req.body;
 
     await StoreModel.create({
         name,
         location: { addressLine, city, province, region },
-        owner: req.user._id
+        owner: req.user?._id
     });
 
     res.sendStatus(201);
 };
 
-export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreUpdate>, res) => {
-    if (!req.user) throw new Unauthorized();
+export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreCreate>, res) => {
+    const { storeId } = req.params as StoreQuery;
+    const { name, addressLine, city, province, region } = req.body;
 
-    const { storeId, name, addressLine, city, province, region } = req.body;
     if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
     const update: Store = {} as Store;
@@ -49,7 +52,7 @@ export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreUpda
     if (province) update.location.province = province;
     if (region) update.location.region = region;
 
-    if (req.user.role === UserRoles.ADMIN || req.store) {
+    if (req.user?.role === UserRoles.ADMIN || req.store) {
         await StoreModel.updateOne({ storeId }, { $set: update });
         return res.sendStatus(204);
     }
@@ -58,12 +61,10 @@ export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreUpda
 };
 
 export const deleteStore: RequestHandler = async (req, res) => {
-    if (!req.user) throw new Unauthorized();
-
     const { storeId } = req.query as StoreQuery;
     if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
-    if (req.user.role === UserRoles.ADMIN || req.store) {
+    if (req.user?.role === UserRoles.ADMIN || req.store) {
         await StoreModel.deleteOne({ storeId });
         return res.sendStatus(204);
     }

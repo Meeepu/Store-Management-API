@@ -41,6 +41,43 @@ const storeSchema = new Schema(
     { timestamps: true }
 );
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    Store:
+ *      type: object
+ *      required:
+ *        - storeId
+ *        - owner
+ *        - name
+ *        - location
+ *      properties:
+ *        storeId:
+ *          type: string
+ *          example: STORE0001
+ *        owner:
+ *          type: string
+ *          example: John Doe
+ *        name:
+ *          type: string
+ *          example: John's Store
+ *        location:
+ *          type: object
+ *          properties:
+ *            addressLine:
+ *              type: string
+ *              example: 123 Main St
+ *            city:
+ *              type: string
+ *              example: Marikina City
+ *            province:
+ *              type: string
+ *              example: NCR
+ *            region:
+ *              type: string
+ *              example: NCR
+ */
 export interface Store {
     storeId: string;
     owner: Types.ObjectId | Record<string, unknown>;
