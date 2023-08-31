@@ -25,19 +25,15 @@ const router = Router();
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      422:
- *        description: Incomplete store details
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/responses/ValidationError'
+ *        $ref: '#/components/responses/ValidationError'
  *      500:
  *        description: Internal server error
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/', asyncHandler(createStore));
 
@@ -62,13 +58,13 @@ router.post('/', asyncHandler(createStore));
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      500:
  *        description: Internal server error
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/', asyncHandler(getStores));
 
@@ -97,25 +93,21 @@ router.get('/', asyncHandler(getStores));
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      403:
  *        description: User is not an admin or owner of store
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      422:
- *        description: Store ID is required
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/responses/ValidationError'
+ *        $ref: '#/components/responses/ValidationError'
  *      500:
  *        description: Internal server error
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/:storeId', asyncHandler(getStore));
 
@@ -135,30 +127,32 @@ router.get('/:storeId', asyncHandler(getStore));
  *    responses:
  *      204:
  *        description: Store details updated
+ *      401:
+ *        description: User is not logged in
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      403:
  *        description: User is not an admin or owner of store
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      404:
  *        description: Store not found
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      422:
- *        description: Store ID is required
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/responses/ValidationError'
+ *        $ref: '#/components/responses/ValidationError'
  *      500:
  *        description: Internal server error
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.patch('/:storeId', asyncHandler(updateStore));
 
@@ -183,31 +177,27 @@ router.patch('/:storeId', asyncHandler(updateStore));
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      403:
  *        description: User is not an admin or owner of store
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      404:
  *        description: Store not found
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      422:
- *        description: Store ID is required
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/responses/ValidationError'
+ *        $ref: '#/components/responses/ValidationError'
  *      500:
  *        description: Internal server error
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.delete('/:storeId', asyncHandler(deleteStore));
 

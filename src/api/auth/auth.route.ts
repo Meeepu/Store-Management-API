@@ -27,6 +27,10 @@ const router = Router();
  *          You need to include these cookies in subsequent requests.
  *      500:
  *        description: Internal server error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ErrorResponse'
  *
  */
 router.post('/login', asyncHandler(login));
@@ -53,19 +57,15 @@ router.post('/login', asyncHandler(login));
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      422:
- *        description: Incomplete register details
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/responses/ValidationError'
+ *        $ref: '#/components/responses/ValidationError'
  *      500:
  *        description: Internal server error
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/responses/ErrorResponse'
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/register', asyncHandler(register));
 
@@ -81,8 +81,18 @@ router.use(authenticate);
  *    responses:
  *      204:
  *        description: User logged out succesfully
+ *      401:
+ *        description: User is not logged in
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ErrorResponse'
  *      500:
  *        description: Internal server error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/logout', asyncHandler(logout));
 

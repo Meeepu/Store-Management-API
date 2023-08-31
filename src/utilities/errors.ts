@@ -1,17 +1,14 @@
 /**
  * @openapi
  * components:
- *  responses:
+ *  schemas:
  *    ErrorResponse:
- *      content:
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              name:
- *                type: string
- *              message:
- *                type: string
+ *      type: object
+ *      properties:
+ *        name:
+ *          type: string
+ *        message:
+ *          type: string
  */
 class Conflict extends Error {
     name: string = 'Duplicate';
