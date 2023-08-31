@@ -15,11 +15,13 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
         statusCode = 409;
     }
 
-    if (err instanceof Error.ValidationError)
+    if (err instanceof Error.ValidationError) {
         message = Object.values(err.errors).map(({ path, message }) => ({
             path,
             message
         }));
+        statusCode = 422;
+    }
 
     if (err instanceof JsonWebTokenError) {
         name = 'Token is malformed';
