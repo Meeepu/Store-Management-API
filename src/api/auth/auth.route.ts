@@ -12,6 +12,7 @@ const router = Router();
  *    tags:
  *      - auth
  *    summary: Login a user
+ *    security: []
  *    requestBody:
  *      required: true
  *      content:
@@ -20,7 +21,10 @@ const router = Router();
  *            $ref: '#/components/schemas/UserCredentials'
  *    responses:
  *      204:
- *        description: User logged in succesfully
+ *        description:
+ *          Successfully authenticated.
+ *          The access and refresh tokens are returned in a cookie named `access-token` and `refresh-token` respectively.
+ *          You need to include these cookies in subsequent requests.
  *      500:
  *        description: Internal server error
  *
@@ -34,6 +38,7 @@ router.post('/login', asyncHandler(login));
  *    tags:
  *      - auth
  *    summary: Register a user
+ *    security: []
  *    requestBody:
  *      required: true
  *      content:
