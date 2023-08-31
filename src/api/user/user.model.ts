@@ -67,6 +67,29 @@ export enum UserRoles {
  *          format: email
  *        password:
  *          type: string
+ * 
+ *    User:
+ *      type: object
+ *      properties:
+ *        userId:
+ *          type: string
+ *        name:
+ *          type: object
+ *          properties:
+ *            first:
+ *              type: string
+ *            middle:
+ *              type: string
+ *            last:
+ *              type: string
+ *            extension:
+ *              type: string
+ *        role:
+ *          type: string
+ *          default: user
+ *          enum:
+ *            - admin
+ *            - user
  */
 export interface User {
     userId: string;
