@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
@@ -19,17 +20,21 @@ import envs from './utilities/envs';
 
 const app = express();
 
+app.use(cors({ credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(helmet());
 app.use(morgan('dev'));
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use('/auth', authRoute);
+app.use((_req, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    next();
+});
 app.use(authenticate);
-app.use('/store', storeRoute);
-app.use('/user', userRoute);
+app.use('/stores', storeRoute);
+app.use('/users', userRoute);
 
 app.use((_req, _res, next) => next(new NotFound()));
 app.use(errorHandler);
