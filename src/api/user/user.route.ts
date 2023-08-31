@@ -24,8 +24,16 @@ const router = Router();
  *        description: User details updated
  *      401:
  *        description: User is not logged in
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  *      500:
  *        description: Internal server error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  */
 router.patch('/details', asyncHandler(updateDetails));
 
@@ -47,10 +55,22 @@ router.use(onlyAdmin);
  *              $ref: '#/components/schemas/User'
  *      401:
  *        description: User is not logged in
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  *      403:
  *        description: User is not an admin
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  *      500:
  *        description: Internal server error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  */
 router.get('/', asyncHandler(getUsers));
 
@@ -78,12 +98,28 @@ router.get('/', asyncHandler(getUsers));
  *                $ref: '#/components/schemas/User'
  *      401:
  *        description: User is not logged in
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  *      403:
  *        description: User is not an admin
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  *      404:
  *        description: User not found
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  *      500:
  *        description: Internal server error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  */
 router.get('/:userId', asyncHandler(getUser));
 

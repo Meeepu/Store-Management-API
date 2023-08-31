@@ -50,8 +50,22 @@ router.post('/login', asyncHandler(login));
  *        description: User registered successfully
  *      409:
  *        description: Email already registered
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
+ *      422:
+ *        description: Incomplete register details
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ValidationError'
  *      500:
  *        description: Internal server error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/responses/ErrorResponse'
  */
 router.post('/register', asyncHandler(register));
 
