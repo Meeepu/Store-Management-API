@@ -1,5 +1,6 @@
 import asyncHandler from '../../middlewares/asynchronousHandler';
-import { updateCredentials, updateDetails } from './user.controller';
+import { onlyAdmin } from '../../middlewares/authorize';
+import { getUser, getUsers, updateDetails } from './user.controller';
 
 const { Router } = require('express');
 
@@ -28,29 +29,62 @@ const router = Router();
  */
 router.patch('/details', asyncHandler(updateDetails));
 
+router.use(onlyAdmin);
+
 /**
  * @openapi
- * /user/credentials:
- *  patch:
+ * /user:
+ *  get:
  *    tags:
  *      - user
- *    summary: Update user credentials
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            $ref: '#/components/schemas/UserCredentials'
+ *    summary: Get all registered users
  *    responses:
- *      204:
- *        description: User credentials updated
+ *      200:
+ *        description: Found users
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/User'
  *      401:
  *        description: User is not logged in
- *      409:
- *        description: Email already saved
+ *      403:
+ *        description: User is not an admin
  *      500:
  *        description: Internal server error
  */
-router.patch('/credentials', asyncHandler(updateCredentials));
+router.get('/', asyncHandler(getUsers));
+
+/**
+ * @openapi
+ * /user/{userId}:
+ *  get:
+ *    tags:
+ *      - user
+ *    summary: Get user by userId
+ *    parameters:
+ *      - name: userId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: Found user
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *                $ref: '#/components/schemas/User'
+ *      401:
+ *        description: User is not logged in
+ *      403:
+ *        description: User is not an admin
+ *      404:
+ *        description: User not found
+ *      500:
+ *        description: Internal server error
+ */
+router.get('/:userId', asyncHandler(getUser));
 
 export default router;
