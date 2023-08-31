@@ -1,30 +1,37 @@
 import { RequestHandler, Request } from 'express';
 import { StoreCreate, StoreQuery } from './store.types';
-import { Forbidden, UnprocessableEntity } from '../../utilities/errors';
+import { Forbidden, NotFound, UnprocessableEntity } from '../../utilities/errors';
 import { UserRoles } from '../user/user.model';
-import StoreModel, { Store } from './store.model';
+import StoreModel, { StoreDocument, StorePopulatedDocument } from './store.model';
 
 export const getStore: RequestHandler = async (req, res) => {
     const { storeId } = req.params as StoreQuery;
     if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
-    if (req.user?.role === UserRoles.ADMIN || req.store) {
-        const store = req.store || (await StoreModel.findOne({ storeId }).populate('owner').lean().exec());
-        return res.json(store);
+    const store: StoreDocument | null = await StoreModel.findOne({ storeId });
+    if (store === null) throw new NotFound('Store not found');
+
+    const isOwner: boolean = req.user?._id.toString() === store.owner.toString();
+    if (req.user?.role === UserRoles.ADMIN || isOwner) {
+        const populatedStore: StorePopulatedDocument = await store.populate({
+            path: 'owner',
+            select: 'userId name role'
+        });
+        return res.json(populatedStore);
     }
 
-    throw new Forbidden();
+    throw new Forbidden('You are not the owner of this store');
 };
 
 export const getStores: RequestHandler = async (req, res) => {
-    if (req.user?.role === UserRoles.ADMIN || req.store) {
-        const query = req.store ? { owner: req.user?._id } : {};
-        const stores = await StoreModel.find(query).populate('owner').lean().exec();
-        
-        return res.json(stores);
-    }
+    const query = req.user?.role === UserRoles.ADMIN ? {} : { owner: req.user?._id };
 
-    throw new Forbidden();
+    const stores: StorePopulatedDocument[] = await StoreModel.find(query)
+        .populate({ path: 'owner', select: 'userId name role' })
+        .lean()
+        .exec();
+
+    res.json(stores);
 };
 
 export const createStore: RequestHandler = async (req: Request<{}, {}, StoreCreate>, res) => {
@@ -45,29 +52,36 @@ export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreCrea
 
     if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
-    const update: Store = {} as Store;
-    if (name) update.name = name;
-    if (addressLine) update.location.addressLine = addressLine;
-    if (city) update.location.city = city;
-    if (province) update.location.province = province;
-    if (region) update.location.region = region;
+    const store: StoreDocument | null = await StoreModel.findOne({ storeId });
+    if (store === null) throw new NotFound('Store not found');
 
-    if (req.user?.role === UserRoles.ADMIN || req.store) {
-        await StoreModel.updateOne({ storeId }, { $set: update });
+    const isOwner: boolean = req.user?._id.toString() === store.owner.toString();
+    if (req.user?.role === UserRoles.ADMIN || isOwner) {
+        if (name) store.name = name;
+        if (addressLine) store.location.addressLine = addressLine;
+        if (city) store.location.city = city;
+        if (province) store.location.province = province;
+        if (region) store.location.region = region;
+
+        await store.save();
         return res.sendStatus(204);
     }
 
-    throw new Forbidden();
+    throw new Forbidden('You are not the owner of this store');
 };
 
 export const deleteStore: RequestHandler = async (req, res) => {
-    const { storeId } = req.query as StoreQuery;
+    const { storeId } = req.params as StoreQuery;
     if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
-    if (req.user?.role === UserRoles.ADMIN || req.store) {
+    const store: StoreDocument | null = await StoreModel.findOne({ storeId });
+    if (store === null) throw new NotFound('Store not found');
+
+    const isOwner: boolean = req.user?._id.toString() === store.owner.toString();
+    if (req.user?.role === UserRoles.ADMIN || isOwner) {
         await StoreModel.deleteOne({ storeId });
         return res.sendStatus(204);
     }
 
-    throw new Forbidden();
+    throw new Forbidden('You are not the owner of this store');
 };

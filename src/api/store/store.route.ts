@@ -1,4 +1,3 @@
-import { admin, owner } from '../../middlewares/authorize';
 import { createStore, deleteStore, getStore, getStores, updateStore } from './store.controller';
 import { Router } from 'express';
 import asyncHandler from '../../middlewares/asynchronousHandler';
@@ -7,7 +6,7 @@ const router = Router();
 
 /**
  * @openapi
- * /store:
+ * /stores:
  *  post:
  *    tags:
  *      - store
@@ -28,16 +27,14 @@ const router = Router();
  */
 router.post('/', asyncHandler(createStore));
 
-router.use(admin, owner);
-
 /**
  * @openapi
- * /store:
+ * /stores:
  *  get:
  *    tags:
  *      - store
  *    summary: Get owned stores
- *    response:
+ *    responses:
  *      200:
  *        description: Stores
  *        content:
@@ -53,7 +50,7 @@ router.get('/', asyncHandler(getStores));
 
 /**
  * @openapi
- * /store/{storeId}:
+ * /stores/{storeId}:
  *  get:
  *    tags:
  *      - store
@@ -78,11 +75,11 @@ router.get('/', asyncHandler(getStores));
  *      500:
  *        description: Internal server error
  */
-router.get('/{storeId}', asyncHandler(getStore));
+router.get('/:storeId', asyncHandler(getStore));
 
 /**
  * @openapi
- * /store/{storeId}:
+ * /stores/{storeId}:
  *  patch:
  *    tags:
  *      - store
@@ -103,11 +100,11 @@ router.get('/{storeId}', asyncHandler(getStore));
  *      500:
  *        description: Internal server error
  */
-router.patch('/{storeId}', asyncHandler(updateStore));
+router.patch('/:storeId', asyncHandler(updateStore));
 
 /**
  * @openapi
- * /store/{storeId}:
+ * /stores/{storeId}:
  *  delete:
  *    tags:
  *      - store
@@ -128,6 +125,6 @@ router.patch('/{storeId}', asyncHandler(updateStore));
  *      500:
  *        description: Internal server error
  */
-router.delete('/{storeId}', asyncHandler(deleteStore));
+router.delete('/:storeId', asyncHandler(deleteStore));
 
 export default router;
