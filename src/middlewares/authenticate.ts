@@ -1,9 +1,9 @@
-import { cookieOptions, signAccess, signRefresh } from 'utilities/cookies';
+import { cookieOptions, signAccess, signRefresh } from '../utilities/cookies';
 import { JwtPayload, verify } from 'jsonwebtoken';
-import { NotFound, Unauthorized } from 'utilities/errors';
+import { NotFound, Unauthorized } from '../utilities/errors';
 import { Payload } from '../api/auth/auth.types';
 import { RequestHandler } from 'express';
-import envs from 'utilities/envs';
+import envs from '../utilities/envs';
 import UserModel, { UserDocument } from '../api/user/user.model';
 
 const refreshTime = 5 * 24 * 60 * 60 * 1000; // 5 days

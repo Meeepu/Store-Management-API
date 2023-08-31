@@ -1,5 +1,5 @@
 import { RequestHandler, Request } from 'express';
-import { Unauthorized } from 'utilities/errors';
+import { Unauthorized } from '../../utilities/errors';
 import { UserDetails } from './user.types';
 import UserModel, { User } from './user.model';
 

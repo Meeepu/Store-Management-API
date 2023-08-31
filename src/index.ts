@@ -4,15 +4,15 @@ import express from 'express';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 
-import errorHandler from 'middlewares/errorHandler';
-import authenticate from 'middlewares/authenticate';
+import errorHandler from './middlewares/errorHandler';
+import authenticate from './middlewares/authenticate';
 
 import authRoute from './api/auth/auth.route';
 import storeRoute from './api/store/store.route';
 import userRoute from './api/user/user.route';
 
-import { NotFound } from 'utilities/errors';
-import envs from 'utilities/envs';
+import { NotFound } from './utilities/errors';
+import envs from './utilities/envs';
 
 const app = express();
 

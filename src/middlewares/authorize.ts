@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import { UserRoles } from '../api/user/user.model';
-import { Forbidden } from 'utilities/errors';
+import { Forbidden } from '../utilities/errors';
 import StoreModel, { StoreDocument } from '../api/store/store.model';
 
 export const admin: RequestHandler = (req, _res, next) => {

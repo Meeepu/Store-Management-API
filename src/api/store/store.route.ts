@@ -1,7 +1,7 @@
-import { admin, owner } from 'middlewares/authorize';
+import { admin, owner } from '../../middlewares/authorize';
 import { createStore, deleteStore, getStores, updateStore } from './store.controller';
 import { Router } from 'express';
-import asyncHandler from 'middlewares/asynchronousHandler';
+import asyncHandler from '../../middlewares/asynchronousHandler';
 
 const router = Router();
 

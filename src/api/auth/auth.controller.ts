@@ -1,8 +1,8 @@
 import { compareSync } from 'bcrypt';
-import { cookieOptions, signAccess, signRefresh } from 'utilities/cookies';
+import { cookieOptions, signAccess, signRefresh } from '../../utilities/cookies';
 import { Payload, RegisterUser } from './auth.types';
 import { RequestHandler, Request } from 'express';
-import { Unauthorized } from 'utilities/errors';
+import { Unauthorized } from '../../utilities/errors';
 import UserModel, { User, UserDocument } from '../user/user.model';
 
 export const login: RequestHandler = async (req: Request<{}, {}, RegisterUser>, res) => {

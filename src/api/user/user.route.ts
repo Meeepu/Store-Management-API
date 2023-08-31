@@ -1,4 +1,4 @@
-import asyncHandler from 'middlewares/asynchronousHandler';
+import asyncHandler from '../../middlewares/asynchronousHandler';
 import { updateCredentials, updateDetails } from './user.controller';
 
 const { Router } = require('express');
