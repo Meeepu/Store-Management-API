@@ -48,3 +48,11 @@ export const login: RequestHandler = async (req: Request<{}, {}, User['credentia
         .cookie('refresh-token', signRefresh(payload), cookieOptions.refresh)
         .sendStatus(204);
 };
+
+export const logout: RequestHandler = (_req, res) => {
+    // Reset cookies by overriding exisiting cookies with an empty string and setting the maxAge to 0
+    // This results in the cookies being immediately expire upon sending the request
+    res.cookie('access-token', '', cookieOptions.default)
+        .cookie('refresh-token', '', cookieOptions.default)
+        .sendStatus(204);
+};

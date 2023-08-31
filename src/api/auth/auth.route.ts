@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { login, register } from './auth.controller';
+import { login, logout, register } from './auth.controller';
 import asyncHandler from '../../middlewares/asynchronousHandler';
+import authenticate from '../../middlewares/authenticate';
 
 const router = Router();
 
@@ -48,5 +49,22 @@ router.post('/login', asyncHandler(login));
  *        description: Internal server error
  */
 router.post('/register', asyncHandler(register));
+
+router.use(authenticate);
+
+/**
+ * @openapi
+ * /auth/logout:
+ *  post:
+ *    tags:
+ *      - auth
+ *    summary: Logout a user
+ *    responses:
+ *      204:
+ *        description: User logged out succesfully
+ *      500:
+ *        description: Internal server error
+ */
+router.post('/logout', asyncHandler(logout));
 
 export default router;
