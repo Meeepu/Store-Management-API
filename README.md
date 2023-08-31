@@ -7,7 +7,7 @@ A simple API that allows users to create and manage their own stores.
 - Node.js
 
 ### Create .env file
-Create a .env file to store your jwt secrets and mongodb uri. Exam below:
+Create a .env file to store your jwt secrets and mongodb uri. Example below:
 
 ```
 PORT = 3000
