@@ -7,11 +7,11 @@ A simple API that allows users to create and manage their own stores.
 - Node.js
 
 ### Create .env file
-Create a .env file to store your jwt secrets and mongodb uri. Follow the format below:
+Create a .env file to store your jwt secrets and mongodb uri. Exam below:
 
 ```
 PORT = 3000
-MONGO_URI = mongodb://127.0.0.1:27017/StoreMangementAPI
+MONGO_URI = mongodb+srv://your.mongodb.uri/StoreMangementAPI
 JWT_ACCESS = myJwtAccessKeySecret
 JWT_REFRESH = myJwtRefreshKeySecret
 ```
