@@ -1,23 +1,23 @@
 {
     "compilerOptions": {
-        "target": "ES2016",
-        "module": "CommonJS",
-        "typeRoots": ["./src/@types"],
-        "resolveJsonModule": true,
-        "sourceMap": true,
-        "outDir": "./dist",
+        "alwaysStrict": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "strict": true,
+        "module": "CommonJS",
         "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
+        "noImplicitReturns": true,
         "noImplicitThis": true,
-        "alwaysStrict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "skipLibCheck": true
+        "outDir": "./dist",
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "target": "ES2016",
+        "typeRoots": ["./src/@types", "./node_modules/@types"],
     },
-    "include": ["src/**/*.ts"]
+    "include": ["./src/**/*.ts", "./test/**/*.ts"]
 }
