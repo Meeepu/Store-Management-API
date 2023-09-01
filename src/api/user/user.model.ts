@@ -32,7 +32,6 @@ const userSchema = new Schema(
             password: {
                 type: String,
                 required: [true, 'Password is required'],
-                match: /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[\]:;<>,.?\/~_+-=|\\]).{8,32}$/,
                 set: (value: string): string => hashSync(value, 10)
             }
         },

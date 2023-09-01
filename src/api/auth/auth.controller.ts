@@ -5,8 +5,13 @@ import { RequestHandler, Request } from 'express';
 import { Unauthorized } from '../../utilities/errors';
 import UserModel, { User, UserDocument } from '../user/user.model';
 
+const passwordFormat: RegExp = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[\]:;<>,.?\/~_+-=|\\]).{8,32}$/;
+
 export const register: RequestHandler = async (req: Request<{}, {}, RegisterUser>, res) => {
     const { firstName, middleName, lastName, extensionName, email, password } = req.body;
+
+    // Check password format
+    const validPassword: boolean = typeof password === 'string' && passwordFormat.test(password);
 
     // Creating a new user
     await UserModel.create({
@@ -18,7 +23,7 @@ export const register: RequestHandler = async (req: Request<{}, {}, RegisterUser
         },
         credentials: {
             email,
-            password
+            password: validPassword ? password : undefined
         }
     });
 
