@@ -14,6 +14,8 @@ PORT = 3000
 MONGO_URI = mongodb+srv://your.mongodb.uri/StoreMangementAPI
 JWT_ACCESS = myJwtAccessKeySecret
 JWT_REFRESH = myJwtRefreshKeySecret
+ADMIN_EMAIL = admin@email.com
+ADMIN_PASS = Admin.password1
 ```
 
 ## Project Setup
