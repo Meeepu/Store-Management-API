@@ -5,5 +5,7 @@ export default cleanEnv(process.env, {
     PORT: port({ default: 3000 }),
     MONGO_URI: str(),
     JWT_ACCESS: str(),
-    JWT_REFRESH: str()
+    JWT_REFRESH: str(),
+    ADMIN_EMAIL: str(),
+    ADMIN_PASS: str()
 });
