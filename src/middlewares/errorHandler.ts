@@ -6,9 +6,6 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     // Destructure the error object and provide default values if properties are missing
     let { name = 'Internal server error', message = 'Something went wrong', statusCode = 500 } = err;
 
-    // Log the error for debugging purposes
-    console.log('🚀 ~ file: errorHandler.ts:11 ~ err:', err);
-
     // Check if the error is a duplicate key error
     if (err.code && err.code === 11000) {
         // Extract the first key-value pair from the error's keyValue object
