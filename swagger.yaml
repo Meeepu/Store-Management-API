@@ -4,8 +4,8 @@ info:
   version: 2.0.0
   description: A simple API that allows users to create and manage their own stores.
   termsOfService: http://swagger.io/terms/
-server:
-  url: http://localhost:8080
+servers:
+  - url: http://localhost:8080
 tags:
   - name: auth
     description: User authentication
@@ -25,7 +25,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCredentials'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
       responses:
         '204':
           description: |
@@ -70,6 +76,9 @@ paths:
       tags:
         - auth
       summary: Logout a user
+      security:
+        - accessKey: []
+        - refreshKey: []
       responses:
         '205':
           description: User successfully logged out
@@ -82,6 +91,9 @@ paths:
       tags:
         - store
       summary: Get owned stores
+      security:
+        - accessKey: []
+        - refreshKey: []
       responses:
         '200':
           description: Stores successfully retrieved
@@ -99,6 +111,9 @@ paths:
       tags:
         - store
       summary: Create a new store
+      security:
+        - accessKey: []
+        - refreshKey: []
       requestBody:
         required: true
         content:
@@ -119,6 +134,9 @@ paths:
       tags:
         - store
       summary: Get a store
+      security:
+        - accessKey: []
+        - refreshKey: []
       parameters:
         - name: storeId
           in: path
@@ -154,6 +172,9 @@ paths:
       tags:
         - store
       summary: Update a store
+      security:
+        - accessKey: []
+        - refreshKey: []
       parameters:
         - name: storeId
           in: path
@@ -194,6 +215,9 @@ paths:
       tags:
         - store
       summary: Delete a store
+      security:
+        - accessKey: []
+        - refreshKey: []
       parameters:
         - name: storeId
           in: path
@@ -226,6 +250,9 @@ paths:
       tags:
         - user
       summary: Get user/s
+      security:
+        - accessKey: []
+        - refreshKey: []
       description: |
         `admin`: Get all users
         `user`: Get its own user
@@ -248,6 +275,9 @@ paths:
       tags:
         - user
       summary: Update user's details
+      security:
+        - accessKey: []
+        - refreshKey: []
       requestBody:
         content:
           application/json:
@@ -265,6 +295,9 @@ paths:
       tags:
         - user
       summary: Get user
+      security:
+        - accessKey: []
+        - refreshKey: []
       parameters:
         - name: userId
           in: path
@@ -304,6 +337,9 @@ paths:
       tags:
         - user
       summary: Update a user's details
+      security:
+        - accessKey: []
+        - refreshKey: []
       parameters:
         - name: userId
           in: path
@@ -351,9 +387,6 @@ components:
       type: apiKey
       in: cookie
       name: refresh-key
-  security:
-    - accessKey: []
-    - refreshKey: []
   schemas:
     RegisterUser:
       type: object
