@@ -7,5 +7,8 @@ export default cleanEnv(process.env, {
     JWT_ACCESS: str(),
     JWT_REFRESH: str(),
     ADMIN_EMAIL: str(),
-    ADMIN_PASS: str()
+    ADMIN_PASS: str(),
+    NODE_ENV: str({
+        choices: ['development', 'production', 'test']
+    })
 });

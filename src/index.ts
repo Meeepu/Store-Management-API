@@ -28,7 +28,11 @@ app.use(cors({ credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(helmet());
-app.use(morgan('dev'));
+
+// If the environment is development, log requests to the console
+if (envs.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 
 // Load Swagger documentation
 const swaggerDoc = yaml.load('./swagger.yaml');
@@ -56,7 +60,9 @@ app.use(errorHandler);
 mongoose
     .connect(envs.MONGO_URI)
     .then(() => {
-        console.log('Connected to database');
+        if (envs.NODE_ENV !== 'test') {
+            console.log('Connected to database');
+        }
 
         // Find or create an admin user
         return UserModel.findOne({ role: UserRoles.ADMIN });
@@ -81,7 +87,11 @@ mongoose
     })
     .then(() => {
         // Start the server
-        app.listen(envs.PORT, () => console.log(`Server is running on port ${envs.PORT}`));
+        app.listen(envs.PORT, () => {
+            if (envs.NODE_ENV !== 'testing') {
+                console.log(`Server is running on port ${envs.PORT}`);
+            }
+        });
     })
     .catch((error) => console.log('Error connecting to database: ', error));
 
