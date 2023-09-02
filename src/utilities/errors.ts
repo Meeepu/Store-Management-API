@@ -45,30 +45,6 @@ class Unauthorized extends Error {
         super(message);
     }
 }
-
-/**
- * @openapi
- * components:
- *  responses:
- *    ValidationError:
- *      description: Invalid input data
- *      content:
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              name:
- *                type: string
- *              message:
- *                type: array
- *                items:
- *                  type: object
- *                  properties:
- *                    path:
- *                      type: string
- *                    message:
- *                      type: string
- */
 class UnprocessableEntity extends Error {
     name: string = 'Unprocessable Entity';
     statusCode: number = 422;

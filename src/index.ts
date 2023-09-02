@@ -2,6 +2,8 @@ import UserModel, { UserDocument, UserRoles } from './api/user/user.model';
 import app from './app';
 import database from './database';
 import envs from './utilities/envs';
+const swaggerDoc = yaml.load('./swagger.yaml');
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 // Connect to the database
 database

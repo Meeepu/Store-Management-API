@@ -1,0 +1,485 @@
+openapi: 3.0.0
+info:
+  title: Store Management API
+  version: 2.0.0
+  description: A simple API that allows users to create and manage their own stores.
+  termsOfService: http://swagger.io/terms/
+server:
+  url: http://localhost:8080
+tags:
+  - name: auth
+    description: User authentication
+  - name: user
+    description: User management
+  - name: store
+    description: Store management
+paths:
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login a user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '204':
+          description: |
+            User successfully logged in. <br>
+            The access and refresh tokens are returned in a cookie named `access-token` and `refresh-token` respectively. <br>
+            You need to include these cookies in subsequent requests.
+        '401':
+          description: Invalid user credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+      responses:
+        '201':
+          description: User successfully registered
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Logout a user
+      responses:
+        '205':
+          description: User successfully logged out
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /stores:
+    get:
+      tags:
+        - store
+      summary: Get owned stores
+      responses:
+        '200':
+          description: Stores successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - store
+      summary: Create a new store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStore'
+      responses:
+        '201':
+          description: Store successfully created
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /stores/{storeId}:
+    get:
+      tags:
+        - store
+      summary: Get a store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Store successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Store ID is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - store
+      summary: Update a store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStore'
+      responses:
+        '204':
+          description: Store successfully updated
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: |
+            `parameter`: Store ID is required <br>
+            `request body`: Invalid input data
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - $ref: '#/components/schemas/ValidationResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - store
+      summary: Delete a store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Store successfully deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Store ID is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users:
+    get:
+      tags:
+        - user
+      summary: Get user/s
+      description: |
+        `admin`: Get all users
+        `user`: Get its own user
+      responses:
+        '200':
+          description: Users successfully retrieved
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - user
+      summary: Update user's details
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+      responses:
+        '204':
+          description: User successfully updated
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/{userId}:
+    get:
+      tags:
+        - user
+      summary: Get user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: User is not an admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: User ID is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - user
+      summary: Update a user's details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+      responses:
+        '204':
+          description: User successfully updated
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: User is not an admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: User ID is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    accessKey:
+      type: apiKey
+      in: cookie
+      name: access-key
+    refreshKey:
+      type: apiKey
+      in: cookie
+      name: refresh-key
+  security:
+    - accessKey: []
+    - refreshKey: []
+  schemas:
+    RegisterUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        extensionName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserDetails:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        extensionName:
+          type: string
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+        name:
+          type: object
+          properties:
+            first:
+              type: string
+            middle:
+              type: string
+            last:
+              type: string
+            extension:
+              type: string
+        role:
+          type: string
+          default: user
+          enum:
+            - user
+            - admin
+    CreateStore:
+      type: object
+      properties:
+        name:
+          type: string
+        addressLine:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+        region:
+          type: string
+    Store:
+      type: object
+      properties:
+        storeId:
+          type: string
+        owner:
+          type: string
+        name:
+          type: string
+        location:
+          type: object
+          properties:
+            addressLine:
+              type: string
+            city:
+              type: string
+            province:
+              type: string
+            region:
+              type: string
+    ErrorResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+    ValidationResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+  responses:
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnauthorizedError:
+      description: User not logged in
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ForbiddenError:
+      description: User is not an admin or owner of the store
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationError:
+      description: Invalid input data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationResponse'
