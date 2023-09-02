@@ -17,12 +17,20 @@ export const getUser: RequestHandler = async (req, res) => {
     res.json(user);
 };
 
-export const getUsers: RequestHandler = async (_req, res) => {
-    // Find all users in the UserModel collection, excluding the 'credentials' field.
-    const users: UserDocument[] = await UserModel.find({}, { credentials: 0 }).lean().exec();
+export const getUsers: RequestHandler = async (req, res) => {
+    // Check if the user's role is "USER"
+    if (req.user?.role === UserRoles.USER) {
+        // If the user's role is "USER", send the user object as the response
+        return res.json(req.user);
+    }
 
-    // Send the users data as a JSON response.
-    res.json(users);
+    // Find all users in the UserModel collection, excluding the "credentials" field
+    const users = await UserModel.find({}, { credentials: 0 }).lean().exec();
+
+    // Send the list of users as the response
+    return res.json(users);
+};
+
 export const updateDetails: RequestHandler = async (req: Request<{}, {}, Partial<UserDetails>>, res) => {
     // Check if user is logged in
     if (req.user === undefined) throw new Unauthorized('User not logged in');
