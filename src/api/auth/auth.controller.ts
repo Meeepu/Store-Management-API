@@ -59,5 +59,5 @@ export const logout: RequestHandler = (_req, res) => {
     // This results in the cookies being immediately expire upon sending the request
     res.cookie('access-token', '', cookieOptions.default)
         .cookie('refresh-token', '', cookieOptions.default)
-        .sendStatus(204);
+        .sendStatus(205);
 };
