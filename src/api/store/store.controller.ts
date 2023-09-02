@@ -3,6 +3,7 @@ import { StoreCreate, StoreQuery } from './store.types';
 import { Forbidden, NotFound, UnprocessableEntity } from '../../utilities/errors';
 import { UserRoles } from '../user/user.model';
 import StoreModel, { StoreDocument, StorePopulatedDocument } from './store.model';
+
 export const getStore: RequestHandler = async (req, res) => {
     const { storeId } = req.params as StoreQuery;
 
