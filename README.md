@@ -7,7 +7,16 @@ A simple API that allows users to create and manage their own stores.
 - Node.js
 
 ### Create .env file
-Create a .env file to store your jwt secrets and mongodb uri. Example below:
+
+Create a .env file to store your custom environment variables.
+Required variables:
+- **MONGO_URI:** The connection string of your MongoDB database
+- **JWT_ACCESS:** The secret key in generating JWT access keys
+- **JWT_REFRESH:** The secret key in generating JWT access keys
+- **ADMIN_EMAIL:** The admin account's email
+- **ADMIN_PASS:** The admin account's password
+
+Example below:
 
 ```
 PORT = 3000
