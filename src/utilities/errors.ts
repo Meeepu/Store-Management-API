@@ -1,20 +1,8 @@
-/**
- * @openapi
- * components:
- *  schemas:
- *    ErrorResponse:
- *      type: object
- *      properties:
- *        name:
- *          type: string
- *        message:
- *          type: string
- */
-class Conflict extends Error {
-    name: string = 'Duplicate';
-    statusCode: number = 409;
+class Unauthorized extends Error {
+    name: string = 'Unauthorized';
+    statusCode: number = 401;
 
-    constructor(message = 'Duplicate resource found') {
+    constructor(message = 'Invalid credentials') {
         super(message);
     }
 }
@@ -37,14 +25,15 @@ class NotFound extends Error {
     }
 }
 
-class Unauthorized extends Error {
-    name: string = 'Unauthorized';
-    statusCode: number = 401;
+class Conflict extends Error {
+    name: string = 'Duplicate';
+    statusCode: number = 409;
 
-    constructor(message = 'Invalid credentials') {
+    constructor(message = 'Duplicate resource found') {
         super(message);
     }
 }
+
 class UnprocessableEntity extends Error {
     name: string = 'Unprocessable Entity';
     statusCode: number = 422;
