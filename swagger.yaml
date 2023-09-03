@@ -160,12 +160,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Store ID is required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
@@ -199,16 +193,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: |
-            `parameter`: Store ID is required <br>
-            `request body`: Invalid input data
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorResponse'
-                  - $ref: '#/components/schemas/ValidationResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
@@ -233,12 +217,6 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           description: Store not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Store ID is required
           content:
             application/json:
               schema:
@@ -321,12 +299,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: User ID is required
           content:
             application/json:
               schema:
