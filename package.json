@@ -4,7 +4,7 @@
     "description": "A simple API that allows users to create and manage their own stores.",
     "main": "dist/index.js",
     "scripts": {
-        "test": "SET NODE_ENV=test&& ts-mocha test/**/*.test.ts",
+        "test": "SET NODE_ENV=test&& ts-mocha test/**/*.test.ts --exit",
         "build": "npm test && rimraf dist && tsc",
         "start": "SET NODE_ENV=production&& node dist/index.js",
         "dev": "SET NODE_ENV=development&& nodemon src/index.ts"
