@@ -9,10 +9,10 @@ servers:
 tags:
   - name: auth
     description: User authentication
-  - name: user
-    description: User management
   - name: store
     description: Store management
+  - name: user
+    description: User management
 paths:
   /auth/login:
     post:
@@ -90,7 +90,10 @@ paths:
     get:
       tags:
         - store
-      summary: Get owned stores
+      summary: Get stores
+      description: |
+        `admin`: Get all stores <br><br>
+        `user`: Get all owned stores
       security:
         - accessKey: []
         - refreshKey: []
@@ -232,7 +235,7 @@ paths:
         - accessKey: []
         - refreshKey: []
       description: |
-        `admin`: Get all users
+        `admin`: Get all users <br><br>
         `user`: Get its own user
       responses:
         '200':
