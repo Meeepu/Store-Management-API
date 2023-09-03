@@ -88,7 +88,7 @@ mongoose
     .then(() => {
         // Start the server
         app.listen(envs.PORT, () => {
-            if (envs.NODE_ENV !== 'testing') {
+            if (envs.NODE_ENV !== 'test') {
                 console.log(`Server is running on port ${envs.PORT}`);
             }
         });
