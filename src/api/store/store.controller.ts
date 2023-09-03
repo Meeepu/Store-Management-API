@@ -7,9 +7,6 @@ import StoreModel, { StoreDocument, StorePopulatedDocument } from './store.model
 export const getStore: RequestHandler = async (req, res) => {
     const { storeId } = req.params as StoreQuery;
 
-    // Check if the storeId is undefined, and throw an error if it is
-    if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
-
     // Find the store document
     const store: StoreDocument | null = await StoreModel.findOne({ storeId });
 
@@ -75,9 +72,6 @@ export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreCrea
     const { storeId } = req.params as StoreQuery;
     const { name, addressLine, city, province, region } = req.body;
 
-    // Check if the `storeId` is undefined, and throw an error if it is
-    if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
-
     // Find the store with the given `storeId`
     const store: StoreDocument | null = await StoreModel.findOne({ storeId });
 
@@ -109,9 +103,6 @@ export const updateStore: RequestHandler = async (req: Request<{}, {}, StoreCrea
 
 export const deleteStore: RequestHandler = async (req, res) => {
     const { storeId } = req.params as StoreQuery;
-
-    // Check if `storeId` is undefined, and throw an error if it is
-    if (storeId === undefined) throw new UnprocessableEntity('Store ID is required');
 
     // Find a store document using the `storeId`
     const store: StoreDocument | null = await StoreModel.findOne({ storeId });
