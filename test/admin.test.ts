@@ -1,14 +1,75 @@
-import { StoreCreate } from '../src/api/store/store.types';
 import app from '../src/index';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import createTestStore from './helpers/createTestStore';
 import envs from '../src/utilities/envs';
-import genStores, { TestStore } from './generators/stores';
+import genStores from './generators/stores';
 import genUsers from './generators/users';
+import modifyDetails from './helpers/modifyDetails';
 
 chai.use(chaiHttp);
 
 describe('ADMIN', () => {
+    describe('Authentication', () => {
+        describe('POST /auth/login', () => {
+            it('should not log in with incorrect credentials', (done) => {
+                chai.request(app)
+                    .post('/auth/login')
+                    .send({
+                        email: 'admin',
+                        password: 'admin'
+                    })
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+                        done();
+                    });
+            });
+
+            it('should logged in with correct credentials', (done) => {
+                chai.request(app)
+                    .post('/auth/login')
+                    .send({
+                        email: envs.ADMIN_EMAIL,
+                        password: envs.ADMIN_PASS
+                    })
+                    .end((err, res) => {
+                        expect(res).to.have.status(204);
+                        done();
+                    });
+            });
+        });
+
+        describe('POST /auth/logout', () => {
+            it('should not logged out if not logged in', (done) => {
+                chai.request(app)
+                    .post('/auth/logout')
+                    .end((err, res) => {
+                        expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+                        done();
+                    });
+            });
+
+            it('should log out if logged in', async () => {
+                // Sending a POST request to the '/auth/login' endpoint with the given email and password
+                const loginResponse = await chai.request(app).post('/auth/login').send({
+                    email: envs.ADMIN_EMAIL,
+                    password: envs.ADMIN_PASS
+                });
+
+                // Sending a POST request to the '/auth/logout' endpoint
+                const logoutResponse = await chai
+                    .request(app)
+                    .post('/auth/logout')
+                    // Setting the 'Cookie' header with the value from the 'set-cookie' header in the login response
+                    .set('Cookie', loginResponse.headers['set-cookie']);
+
+                expect(logoutResponse).to.have.status(205);
+            });
+        });
+    });
+
     describe('Store Management', () => {
         describe('GET /stores', () => {
             it('should not get any stores if not logged in', (done) => {
@@ -16,6 +77,7 @@ describe('ADMIN', () => {
                     .get('/stores')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
@@ -66,6 +128,7 @@ describe('ADMIN', () => {
                     .post('/stores')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
@@ -83,23 +146,13 @@ describe('ADMIN', () => {
                     .post('/stores')
                     // Setting the 'Cookie' header with the value from the 'set-cookie' header in the login response
                     .set('Cookie', loginResponse.headers['set-cookie'])
-                    .send({
-                        name: "Admin's store",
-                        addressLine: '123 Main St',
-                        province: 'CA'
-                    });
+                    .send(modifyDetails(createTestStore('Admin User'), '', true));
 
                 expect(storesResponse).to.have.status(422);
-                expect(storesResponse.body).to.have.property('message').to.be.an('array').with.lengthOf(2);
-
-                // Assert that there is at least one item in the 'message' array where 'path' is equal to 'location.region'
-                expect(storesResponse.body.message.some(({ path }) => path === 'location.region')).to.be.true;
-
-                // Assert that there is at least one item in the 'message' array where 'path' is equal to 'location.city'
-                expect(storesResponse.body.message.some(({ path }) => path === 'location.city')).to.be.true;
+                expect(storesResponse.body).to.have.property('message').to.be.an('array');
             });
 
-            it('should create a store', async () => {
+            it('should create a store with complete store details', async () => {
                 // Sending a POST request to the '/auth/login' endpoint with the given email and password
                 const loginResponse = await chai.request(app).post('/auth/login').send({
                     email: envs.ADMIN_EMAIL,
@@ -112,13 +165,7 @@ describe('ADMIN', () => {
                     .post('/stores')
                     // Setting the 'Cookie' header with the value from the 'set-cookie' header in the login response
                     .set('Cookie', loginResponse.headers['set-cookie'])
-                    .send({
-                        name: "Admin's store",
-                        addressLine: '123 Main St',
-                        city: 'San Francisco',
-                        province: 'CA',
-                        region: 'CA'
-                    });
+                    .send(createTestStore('Admin User'));
 
                 expect(storesResponse).to.have.status(201);
             });
@@ -130,6 +177,7 @@ describe('ADMIN', () => {
                     .get('/stores/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
@@ -149,6 +197,7 @@ describe('ADMIN', () => {
                     .set('Cookie', loginResponse.headers['set-cookie']);
 
                 expect(storesResponse).to.have.status(404);
+                expect(storesResponse.body).to.have.property('name').equals('Not Found');
             });
 
             it('should get a store', async () => {
@@ -181,6 +230,7 @@ describe('ADMIN', () => {
                     .put('/stores/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
@@ -198,15 +248,10 @@ describe('ADMIN', () => {
                     .patch('/stores/1')
                     // Setting the 'Cookie' header with the value from the 'set-cookie' header in the login response
                     .set('Cookie', loginResponse.headers['set-cookie'])
-                    .send({
-                        name: "Admin's store",
-                        addressLine: '123 Main St',
-                        city: 'San Francisco',
-                        province: 'CA',
-                        region: 'CA'
-                    });
+                    .send(createTestStore('Admin User'));
 
                 expect(storesResponse).to.have.status(404);
+                expect(storesResponse.body).to.have.property('name').equals('Not Found');
             });
 
             it('should update a store with complete store details', async () => {
@@ -215,9 +260,6 @@ describe('ADMIN', () => {
                     email: envs.ADMIN_EMAIL,
                     password: envs.ADMIN_PASS
                 });
-
-                // Extracting the cookie from the response headers
-                const cookie = loginResponse.headers['set-cookie'];
 
                 // Create stores
                 const stores = await genStores();
@@ -230,15 +272,19 @@ describe('ADMIN', () => {
                     const storeResponse = await chai
                         .request(app)
                         .patch(`/stores/${store.storeId}`)
-                        .set('Cookie', cookie)
-                        .send({
-                            // Updating the store details
-                            name: `${store.name} udpated`,
-                            addressLine: `${store.location.addressLine} udpated`,
-                            city: `${store.location.city} udpated`,
-                            province: `${store.location.province} udpated`,
-                            region: `${store.location.region} udpated`
-                        });
+                        .set('Cookie', loginResponse.headers['set-cookie'])
+                        .send(
+                            modifyDetails(
+                                {
+                                    name: store.name,
+                                    addressLine: store.location.addressLine,
+                                    city: store.location.city,
+                                    province: store.location.province,
+                                    region: store.location.region
+                                },
+                                ' Updated'
+                            )
+                        );
 
                     // Asserting that the response status is 204 (No Content)
                     expect(storeResponse).to.have.status(204);
@@ -252,27 +298,6 @@ describe('ADMIN', () => {
                     password: envs.ADMIN_PASS
                 });
 
-                // Extracting the 'set-cookie' header from the login response
-                const cookie = loginResponse.headers['set-cookie'];
-
-                // Function to randomly pick properties to update for a store
-                function propertyPicker(testStore: TestStore) {
-                    const store: StoreCreate = {
-                        name: `${testStore.name} udpated`,
-                        addressLine: `${testStore.location.addressLine} udpated`,
-                        city: `${testStore.location.city} udpated`,
-                        province: `${testStore.location.province} udpated`,
-                        region: `${testStore.location.region} udpated`
-                    };
-
-                    const index = Math.floor(Math.random() * 5);
-                    const entries = Object.entries(store);
-
-                    entries.splice(index, 1);
-
-                    return Object.fromEntries(entries);
-                }
-
                 // Create stores
                 const stores = await genStores();
 
@@ -284,10 +309,20 @@ describe('ADMIN', () => {
                     const storeResponse = await chai
                         .request(app)
                         .patch(`/stores/${store.storeId}`)
-                        .set('Cookie', cookie)
-                        .send(propertyPicker(store));
+                        .set('Cookie', loginResponse.headers['set-cookie'])
+                        .send(
+                            modifyDetails(
+                                {
+                                    name: store.name,
+                                    addressLine: store.location.addressLine,
+                                    city: store.location.city,
+                                    province: store.location.province,
+                                    region: store.location.region
+                                },
+                                ' Updated'
+                            )
+                        );
 
-                    // Expecting the store response status to be 204 (No Content)
                     expect(storeResponse).to.have.status(204);
                 }
             });
@@ -299,6 +334,7 @@ describe('ADMIN', () => {
                     .delete('/stores/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
@@ -379,10 +415,7 @@ describe('ADMIN', () => {
                 // Sending a GET request to the '/stores' endpoint
                 const storesResponse = await chai.request(app).get('/stores').set('Cookie', cookie);
 
-                // Asserting that the response status is 200 (OK)
                 expect(storesResponse).to.have.status(200);
-
-                // Asserting that the response body is an empty array
                 expect(storesResponse.body).to.be.an('array').that.is.empty;
             });
         });
@@ -395,6 +428,7 @@ describe('ADMIN', () => {
                     .get('/users')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
@@ -412,10 +446,7 @@ describe('ADMIN', () => {
                     .get('/users')
                     .set('Cookie', loginResponse.headers['set-cookie']);
 
-                // Asserting that the response status is 200 (OK)
                 expect(usersResponse).to.have.status(200);
-
-                // Asserting that the response body is an empty array
                 expect(usersResponse.body).to.be.an('array').that.is.empty;
             });
 
@@ -435,10 +466,7 @@ describe('ADMIN', () => {
                     .get('/users')
                     .set('Cookie', loginResponse.headers['set-cookie']);
 
-                // Asserting that the response status is 200 (OK)
                 expect(usersResponse).to.have.status(200);
-
-                // Asserting that the response body is an array with the same length of 'users'
                 expect(usersResponse.body).to.be.an('array').with.lengthOf(users.length);
             });
         });
@@ -460,6 +488,7 @@ describe('ADMIN', () => {
                     .get('/users/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });

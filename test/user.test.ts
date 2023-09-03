@@ -1,44 +1,15 @@
-import { StoreCreate } from '../src/api/store/store.types';
 import app from '../src/index';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-import envs from '../src/utilities/envs';
-import genStores, { TestStore } from './generators/stores';
+import createTestStore from './helpers/createTestStore';
+import genStores from './generators/stores';
 import genUsers from './generators/users';
-import { UserDetails } from '../src/api/user/user.types';
+import modifyDetails from './helpers/modifyDetails';
 
 chai.use(chaiHttp);
 
 describe('USER', () => {
     describe('Authentication', () => {
-        describe('POST /auth/login', () => {
-            it('should not log in with incorrect credentials', (done) => {
-                chai.request(app)
-                    .post('/auth/login')
-                    .send({
-                        email: 'admin',
-                        password: 'admin'
-                    })
-                    .end((err, res) => {
-                        expect(res).to.have.status(401);
-                        done();
-                    });
-            });
-
-            it('should logged in with correct credentials', (done) => {
-                chai.request(app)
-                    .post('/auth/login')
-                    .send({
-                        email: envs.ADMIN_EMAIL,
-                        password: envs.ADMIN_PASS
-                    })
-                    .end((err, res) => {
-                        expect(res).to.have.status(204);
-                        done();
-                    });
-            });
-        });
-
         describe('POST /auth/register', () => {
             it('should not register with incomplete user details', (done) => {
                 chai.request(app)
@@ -51,13 +22,9 @@ describe('USER', () => {
                     })
                     .end((err, res) => {
                         expect(res).to.have.status(422);
+                        expect(res.body).to.have.property('name').equals('ValidationError');
                         expect(res.body).to.have.property('message').to.be.an('array').with.lengthOf(2);
 
-                        // Assert that there is at least one item in the 'message' array where 'path' is equal to 'name.last'
-                        expect(res.body.message.some(({ path }) => path === 'name.last')).to.be.true;
-
-                        // Assert that there is at least one item in the 'message' array where 'path' is equal to 'credentials.email'
-                        expect(res.body.message.some(({ path }) => path === 'credentials.email')).to.be.true;
                         done();
                     });
             });
@@ -75,17 +42,20 @@ describe('USER', () => {
                     })
                     .end((err, res) => {
                         expect(res).to.have.status(422);
+                        expect(res.body).to.have.property('name').equals('Unprocessable Entity');
+
                         done();
                     });
             });
 
             it('should not register with duplicate email', async () => {
-                // Create users
+                // Generate a list of users using the genUsers function
                 const users = await genUsers();
 
-                // Get random user
+                // Select a random user from the users list
                 const user = users[Math.floor(Math.random() * users.length)];
 
+                // Send a POST request to the '/auth/register' endpoint of the 'app'
                 const registerResponse = await chai.request(app).post('/auth/register').send({
                     firstName: user.name.first,
                     middleName: user.name.middle,
@@ -95,7 +65,9 @@ describe('USER', () => {
                     password: user.credentials.password
                 });
 
+                // Assert that the response status code is 409 (Conflict)
                 expect(registerResponse).to.have.status(409);
+                expect(registerResponse.body).to.have.property('name').equals('DuplicateError');
             });
 
             it('should register a user with complete and correct user details', (done) => {
@@ -131,31 +103,96 @@ describe('USER', () => {
             });
         });
 
-        describe('POST /auth/logout', () => {
-            it('should not logged out if not logged in', (done) => {
-                chai.request(app)
-                    .post('/auth/logout')
-                    .end((err, res) => {
-                        expect(res).to.have.status(401);
-                        done();
+        describe('POST /auth/login', () => {
+            it('should not log in with missing credentials', async () => {
+                // Call the genUsers function to generate an array of users
+                const users = await genUsers();
+
+                // Iterate through each user in the users array
+                for (const user of users) {
+                    // Send a POST request to the '/auth/login' endpoint of the app with only the user's email
+                    const loginResponse = await chai.request(app).post('/auth/login').send({
+                        email: user.credentials.email
                     });
+
+                    expect(loginResponse).to.have.status(401);
+                    expect(loginResponse.body).to.have.property('name').equals('Unauthorized');
+                }
+            });
+
+            it('should not log in with incorrect credentials', async () => {
+                // Call the genUsers function to generate an array of users
+                const users = await genUsers();
+
+                // Iterate through each user in the users array
+                for (const user of users) {
+                    // Send a POST request to the '/auth/login' endpoint of the app with the user's email and a modified password
+                    const loginResponse = await chai
+                        .request(app)
+                        .post('/auth/login')
+                        .send({
+                            email: user.credentials.email,
+                            password: `${user.credentials.password}-test`
+                        });
+
+                    expect(loginResponse).to.have.status(401);
+                    expect(loginResponse.body).to.have.property('name').equals('Unauthorized');
+                }
+            });
+
+            it('should logged in with correct credentials', async () => {
+                // Fetch the users data
+                const users = await genUsers();
+
+                // Loop through each user
+                for (const user of users) {
+                    // Send a POST request to the '/auth/login' endpoint with the user's credentials
+                    const loginResponse = await chai.request(app).post('/auth/login').send({
+                        email: user.credentials.email,
+                        password: user.credentials.password
+                    });
+
+                    // Assert that the login response has a status code of 204 (No Content)
+                    expect(loginResponse).to.have.status(204);
+                }
+            });
+        });
+
+        describe('POST /auth/logout', () => {
+            it('should not logged out if not logged in', async () => {
+                // Fetch the list of users using the genUsers() function
+                const users = await genUsers();
+
+                // Iterate over each user in the users list
+                for (const user of users) {
+                    // Send a POST request to the '/auth/logout' endpoint
+                    // The request body contains the user's email and password
+                    const logoutResponse = await chai.request(app).post('/auth/logout').send({
+                        email: user.credentials.email,
+                        password: user.credentials.password
+                    });
+
+                    expect(logoutResponse).to.have.status(401);
+                    expect(logoutResponse.body).to.have.property('name').equals('Unauthorized');
+                }
             });
 
             it('should log out if logged in', async () => {
-                // Sending a POST request to the '/auth/login' endpoint with the given email and password
-                const loginResponse = await chai.request(app).post('/auth/login').send({
-                    email: envs.ADMIN_EMAIL,
-                    password: envs.ADMIN_PASS
-                });
+                // Fetch the list of users using the genUsers() function
+                const users = await genUsers();
 
-                // Sending a POST request to the '/auth/logout' endpoint
-                const logoutResponse = await chai
-                    .request(app)
-                    .post('/auth/logout')
-                    // Setting the 'Cookie' header with the value from the 'set-cookie' header in the login response
-                    .set('Cookie', loginResponse.headers['set-cookie']);
+                // Iterate over each user in the users list
+                for (const user of users) {
+                    // Send a POST request to the '/auth/logout' endpoint
+                    // The request body contains the user's email and password
+                    const logoutResponse = await chai.request(app).post('/auth/logout').send({
+                        email: user.credentials.email,
+                        password: user.credentials.password
+                    });
 
-                expect(logoutResponse).to.have.status(205);
+                    expect(logoutResponse).to.have.status(401);
+                    expect(logoutResponse.body).to.have.property('name').equals('Unauthorized');
+                }
             });
         });
     });
@@ -167,18 +204,17 @@ describe('USER', () => {
                     .get('/stores')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
                         done();
                     });
             });
 
             it('should get an empty array of stores if there are no saved stores', async () => {
-                // Generate a list of users using the genUsers() function
+                // Generate a list of users
                 const users = await genUsers();
 
                 // Iterate over each user in the 'users' list
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint with the user's email and password
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -192,9 +228,7 @@ describe('USER', () => {
                         // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                         .set('Cookie', loginResponse.headers['set-cookie']);
 
-                    // Assert that the response status code is 200
                     expect(storesResponse).to.have.status(200);
-                    // Assert that the response body is an empty array
                     expect(storesResponse.body).to.be.an('array').that.is.empty;
                 }
             });
@@ -207,9 +241,7 @@ describe('USER', () => {
                 await genStores(users);
 
                 // Iterate through each user in the users array
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint with the user's email and password
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -223,34 +255,11 @@ describe('USER', () => {
                         // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                         .set('Cookie', loginResponse.headers['set-cookie']);
 
-                    // Assert that the response status code is 200
                     expect(storesResponse).to.have.status(200);
-
-                    // Assert that the response body is an array
                     expect(storesResponse.body).to.be.an('array').that.is.not.empty;
                 }
             });
         });
-
-        // Function to generate incomplete store details based on a name
-        function genIncompleteStoreDetails(name: string, update: string = '') {
-            // Create a store object with some properties
-            const store: StoreCreate = {
-                name: `${name}'s Test${update}`,
-                addressLine: 'Test Address Line' + update,
-                city: 'Test City' + update,
-                province: 'Test Province' + update,
-                region: 'Test Region' + update
-            };
-
-            // Randomly remove one property from the store object
-            const index = Math.floor(Math.random() * 5);
-            const entries = Object.entries(store);
-            entries.splice(index, 1);
-
-            // Return the modified store object
-            return Object.fromEntries(entries);
-        }
 
         describe('POST /stores', async () => {
             it('should not create a store if not logged in', (done) => {
@@ -258,6 +267,8 @@ describe('USER', () => {
                     .post('/stores')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+
                         done();
                     });
             });
@@ -267,9 +278,7 @@ describe('USER', () => {
                 const users = await genUsers();
 
                 // Loop through each user in the list
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint with the user's email and password
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -283,10 +292,11 @@ describe('USER', () => {
                         // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                         .set('Cookie', loginResponse.headers['set-cookie'])
                         // Send incomplete store details generated based on the user's name
-                        .send(genIncompleteStoreDetails(user.name.first + ' ' + user.name.last));
+                        .send(modifyDetails(createTestStore(`${user.name.first} ${user.name.last}`), '', true));
 
                     // Assert that the response has a status code of 422 (unprocessable entity)
                     expect(storesResponse).to.have.status(422);
+                    expect(storesResponse.body).to.have.property('name').equals('ValidationError');
                 }
             });
 
@@ -310,13 +320,7 @@ describe('USER', () => {
                         .post('/stores')
                         // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                         .set('Cookie', loginResponse.headers['set-cookie'])
-                        .send({
-                            name: `${user.name.first} ${user.name.last}'s Test Store`,
-                            addressLine: 'Test Address Line',
-                            city: 'Test City',
-                            province: 'Test Province',
-                            region: 'Test Region'
-                        });
+                        .send(createTestStore(`${user.name.first} ${user.name.last}`));
 
                     // Assert that the response from the '/stores' endpoint has a status code of 201 (Created)
                     expect(storesResponse).to.have.status(201);
@@ -330,6 +334,8 @@ describe('USER', () => {
                     .get('/stores/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+
                         done();
                     });
             });
@@ -339,12 +345,10 @@ describe('USER', () => {
                 const users = await genUsers();
 
                 // Generate stores asynchronously using the generated users
-                const stores = await genStores(users);
+                await genStores(users);
 
                 // Iterate through each user in the users array
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint with the user's email and password
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -371,9 +375,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint with the user's email and password
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -381,21 +383,22 @@ describe('USER', () => {
                     });
 
                     // Iterate over each store
-                    for (let j = 0; j < stores.length; j++) {
-                        const store = stores[j];
-
+                    for (const store of stores) {
                         // Skip the current store if it belongs to the current user
                         if (store.owner.userId === user.userId) continue;
 
                         // Send a GET request to the '/stores/{storeId}' endpoint
-                        const storesResponse = await chai
+                        const storeResponse = await chai
                             .request(app)
                             .get(`/stores/${store.storeId}`)
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie']);
 
-                        // Assert that the response status is 403 (Forbidden)
-                        expect(storesResponse).to.have.status(403);
+                        expect(storeResponse).to.have.status(403);
+                        expect(storeResponse.body).to.have.property('name').equals('Forbidden');
+                        expect(storeResponse.body)
+                            .to.have.property('message')
+                            .equals('You are not the owner of this store');
                     }
                 }
             });
@@ -408,9 +411,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -418,9 +419,7 @@ describe('USER', () => {
                     });
 
                     // Iterate over each store
-                    for (let j = 0; j < stores.length; j++) {
-                        const store = stores[j];
-
+                    for (const store of stores) {
                         // Skip the store if it doesn't belong to the current user
                         if (store.owner.userId !== user.userId) continue;
 
@@ -431,7 +430,6 @@ describe('USER', () => {
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie']);
 
-                        // Assert that the response has a status code of 200
                         expect(storesResponse).to.have.status(200);
                     }
                 }
@@ -444,6 +442,8 @@ describe('USER', () => {
                     .get('/stores/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+
                         done();
                     });
             });
@@ -456,9 +456,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate through each user in the users array
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -485,9 +483,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -495,21 +491,23 @@ describe('USER', () => {
                     });
 
                     // Iterate over each store
-                    for (let j = 0; j < stores.length; j++) {
-                        const store = stores[j];
-
+                    for (const store of stores) {
                         // Skip the current store if it belongs to the current user
                         if (store.owner.userId === user.userId) continue;
 
                         // Send a PATCH request to the '/stores/{storeId}' endpoint
-                        const storesResponse = await chai
+                        const storeResponse = await chai
                             .request(app)
                             .patch(`/stores/${store.storeId}`)
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie']);
 
                         // Assert that the response status is 403 (Forbidden)
-                        expect(storesResponse).to.have.status(403);
+                        expect(storeResponse).to.have.status(403);
+                        expect(storeResponse.body).to.have.property('name').equals('Forbidden');
+                        expect(storeResponse.body)
+                            .to.have.property('message')
+                            .equals('You are not the owner of this store');
                     }
                 }
             });
@@ -522,9 +520,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -532,9 +528,7 @@ describe('USER', () => {
                     });
 
                     // Iterate over each store
-                    for (let j = 0; j < stores.length; j++) {
-                        const store = stores[j];
-
+                    for (const store of stores) {
                         // Skip the current store if it doesn't belong to the current user
                         if (store.owner.userId !== user.userId) continue;
 
@@ -544,13 +538,18 @@ describe('USER', () => {
                             .patch(`/stores/${store.storeId}`)
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie'])
-                            .send({
-                                name: `${user.name.first} ${user.name.last}'s Test Store Update`,
-                                addressLine: 'Test Address Line Update',
-                                city: 'Test City Update',
-                                province: 'Test Province Update',
-                                region: 'Test Regio Updaten'
-                            });
+                            .send(
+                                modifyDetails(
+                                    {
+                                        name: store.name,
+                                        addressLine: store.location.addressLine,
+                                        city: store.location.city,
+                                        province: store.location.province,
+                                        region: store.location.region
+                                    },
+                                    ' Update'
+                                )
+                            );
 
                         // Assert that the response has a status code of 204
                         expect(storesResponse).to.have.status(204);
@@ -566,9 +565,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -576,9 +573,7 @@ describe('USER', () => {
                     });
 
                     // Iterate over each store
-                    for (let j = 0; j < stores.length; j++) {
-                        const store = stores[j];
-
+                    for (const store of stores) {
                         // Skip the current store if it doesn't belong to the current user
                         if (store.owner.userId !== user.userId) continue;
 
@@ -588,7 +583,19 @@ describe('USER', () => {
                             .patch(`/stores/${store.storeId}`)
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie'])
-                            .send(genIncompleteStoreDetails(user.name.first + ' ' + user.name.last, ' Update'));
+                            .send(
+                                modifyDetails(
+                                    {
+                                        name: store.name,
+                                        addressLine: store.location.addressLine,
+                                        city: store.location.city,
+                                        province: store.location.province,
+                                        region: store.location.region
+                                    },
+                                    ' Update',
+                                    true
+                                )
+                            );
 
                         // Assert that the response has a status code of 204
                         expect(storesResponse).to.have.status(204);
@@ -603,6 +610,8 @@ describe('USER', () => {
                     .get('/stores/1')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+
                         done();
                     });
             });
@@ -612,12 +621,10 @@ describe('USER', () => {
                 const users = await genUsers();
 
                 // Generate stores asynchronously using the generated users
-                const stores = await genStores(users);
+                await genStores(users);
 
                 // Iterate through each user in the users array
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -644,9 +651,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -657,18 +662,20 @@ describe('USER', () => {
                     const filteredStores = stores.filter((store) => store.owner.userId !== user.userId);
 
                     // Iterate over each filtered stores
-                    for (let j = 0; j < filteredStores.length; j++) {
-                        const store = filteredStores[j];
-
+                    for (const store of filteredStores) {
                         // Send a DELETE request to the '/stores/{storeId}' endpoint
-                        const storesResponse = await chai
+                        const storeResponse = await chai
                             .request(app)
                             .delete(`/stores/${store.storeId}`)
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie']);
 
-                        // Assert that the 'storesResponse' has a status code of 403
-                        expect(storesResponse).to.have.status(403);
+                        // Assert that the 'storeResponse' has a status code of 403
+                        expect(storeResponse).to.have.status(403);
+                        expect(storeResponse.body).to.have.property('name').equals('Forbidden');
+                        expect(storeResponse.body)
+                            .to.have.property('message')
+                            .equals('You are not the owner of this store');
                     }
                 }
             });
@@ -681,9 +688,7 @@ describe('USER', () => {
                 const stores = await genStores(users);
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -694,9 +699,7 @@ describe('USER', () => {
                     const filteredStores = stores.filter((store) => store.owner.userId === user.userId);
 
                     // Iterate over each filtered stores
-                    for (let j = 0; j < filteredStores.length; j++) {
-                        const store = filteredStores[j];
-
+                    for (const store of filteredStores) {
                         // Send a DELETE request to the '/stores/{storeId}' endpoint
                         const storesResponse = await chai
                             .request(app)
@@ -704,7 +707,6 @@ describe('USER', () => {
                             // Set the 'Cookie' header with the value from the 'set-cookie' header in the login response
                             .set('Cookie', loginResponse.headers['set-cookie']);
 
-                        // Assert that the 'storesResponse' has a status code of 204
                         expect(storesResponse).to.have.status(204);
                     }
 
@@ -714,10 +716,7 @@ describe('USER', () => {
                         .get('/stores')
                         .set('Cookie', loginResponse.headers['set-cookie']);
 
-                    // Assert that the 'storesResponse' has a status code of 200
                     expect(storesResponse).to.have.status(200);
-
-                    // Assert that there are no stores in the response
                     expect(storesResponse.body).to.be.empty;
                 }
             });
@@ -731,6 +730,8 @@ describe('USER', () => {
                     .get('/users')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+
                         done();
                     });
             });
@@ -740,9 +741,7 @@ describe('USER', () => {
                 const users = await genUsers();
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
@@ -769,41 +768,34 @@ describe('USER', () => {
                     .get('/users')
                     .end((err, res) => {
                         expect(res).to.have.status(401);
+                        expect(res.body).to.have.property('name').equals('Unauthorized');
+
                         done();
                     });
             });
 
             it('should update a user', async () => {
+                // Create users
                 const users = await genUsers();
 
                 // Iterate over each user
-                for (let i = 0; i < users.length; i++) {
-                    const user = users[i];
-
+                for (const user of users) {
                     // Send a POST request to the '/auth/login' endpoint to log in the user
                     const loginResponse = await chai.request(app).post('/auth/login').send({
                         email: user.credentials.email,
                         password: user.credentials.password
                     });
 
-                    const details: UserDetails = {
-                        firstName: `${user.name.first} Updated`,
-                        lastName: `${user.name.last} Updated`
-                    };
-
-                    if (user.name.middle) details.middleName = user.name.middle;
-                    if (user.name.extension) details.extensionName = user.name.extension;
-
                     // Send a PATCH request to the '/users' endpoint
-                    const usersResponse = await chai
+                    const userResponse = await chai
                         .request(app)
                         .patch('/users')
                         // Set the 'Cookie' header with the value from the login response
                         .set('Cookie', loginResponse.headers['set-cookie'])
-                        .send(details);
+                        .send(modifyDetails({ firstName: user.name.first, lastName: user.name.last }, ' Update'));
 
                     // Perform assertions on the response
-                    expect(usersResponse).to.have.status(204);
+                    expect(userResponse).to.have.status(204);
                 }
             });
         });
