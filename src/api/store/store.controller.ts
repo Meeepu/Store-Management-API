@@ -1,6 +1,6 @@
 import { RequestHandler, Request } from 'express';
 import { StoreCreate, StoreQuery } from './store.types';
-import { Forbidden, NotFound, UnprocessableEntity } from '../../utilities/errors';
+import { Forbidden, NotFound } from '../../utilities/errors';
 import { UserRoles } from '../user/user.model';
 import StoreModel, { StoreDocument, StorePopulatedDocument } from './store.model';
 
