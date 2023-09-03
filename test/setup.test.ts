@@ -1,14 +1,17 @@
-import UserModel from '../src/api/user/user.model';
+import UserModel, { UserRoles } from '../src/api/user/user.model';
 import StoreModel from '../src/api/store/store.model';
+import envs from '../src/utilities/envs';
+import genStores from './generators/stores';
 
-before((done) => {
-    UserModel.deleteMany({})
-        .then(() => StoreModel.deleteMany({}))
-        .then(() => done());
+beforeEach(async () => {
+    // Reset the database
+    await UserModel.deleteMany({});
+    await StoreModel.deleteMany({});
+
 });
 
-after((done) => {
-    UserModel.deleteMany({})
-        .then(() => StoreModel.deleteMany({}))
-        .then(() => done());
+afterEach(async () => {
+    // Reset the database
+    await UserModel.deleteMany({});
+    await StoreModel.deleteMany({});
 });
