@@ -46,9 +46,8 @@ app.use((_req, res, next) => {
 
 // Mount routes
 app.use('/auth', authRoute);
-app.use(authenticate);
-app.use('/stores', storeRoute);
-app.use('/users', userRoute);
+app.use('/stores', authenticate, storeRoute);
+app.use('/users', authenticate, userRoute);
 
 // Handle not found routes
 app.use((_req, _res, next) => next(new NotFound()));
