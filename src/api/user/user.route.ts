@@ -10,10 +10,6 @@ router.get('/', asyncHandler(getUsers));
 
 router.patch('/', asyncHandler(updateDetails));
 
-router.use(onlyAdmin);
-
-router.get('/:userId', asyncHandler(getUser));
-
-router.patch('/:userId', asyncHandler(updateDetails));
+router.get('/:userId', onlyAdmin, asyncHandler(getUser));
 
 export default router;

@@ -308,50 +308,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    patch:
-      tags:
-        - user
-      summary: Update a user's details
-      security:
-        - accessKey: []
-        - refreshKey: []
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserDetails'
-      responses:
-        '204':
-          description: User successfully updated
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          description: User is not an admin
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: User ID is required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
 components:
   securitySchemes:
     accessKey:
