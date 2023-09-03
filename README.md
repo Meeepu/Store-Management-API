@@ -20,8 +20,8 @@ Example below:
 
 ```
 MONGO_URI = mongodb+srv://your.mongodb.uri/StoreMangementAPI
-JWT_ACCESS = myJwtAccessKeySecret
-JWT_REFRESH = myJwtRefreshKeySecret
+JWT_ACCESS = yourJwtAccessKeySecret
+JWT_REFRESH = yourJwtRefreshKeySecret
 ADMIN_EMAIL = admin@email.com
 ADMIN_PASS = Admin.password1
 ```
