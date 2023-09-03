@@ -28,27 +28,46 @@ ADMIN_PASS = Admin.password1
 
 ## Project Setup
 
+Install all the necessary project dependencies
+
 ```sh
 npm install
 ```
 
 ### Compile and Hot-Reload for Development
+---
+
+Restarts the server every time save file
 
 ```sh
 npm run dev
 ```
 
-### Compile for Production
+### Testing
+---
+
+Run the tests
+
+```sh
+npm test
+```
+
+### Build for Production
+---
+
+Compile and build the project
 
 ```sh
 npm run build
 ```
 
-## Run the Production Server
+### Run the Production Server
+---
 
-You must compile the project first (production) before running the server.  
-To run the server, execute the command below:
+Starts the server
 
 ```sh
-node dist/index.js
+npm start
 ```
+
+**NOTE:** You must execute `npm run build` first
