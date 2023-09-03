@@ -3,6 +3,9 @@ import genUsers, { TestUser } from './users';
 
 export type TestStore = Omit<Store, 'storeId'> & { owner: TestUser; storeId?: string };
 
+const storesMin: number = 3;
+const storesMax: number = 5;
+
 export default async (users: TestUser[] | undefined = undefined) => {
     users = users || (await genUsers());
     const stores: TestStore[] = [];
@@ -12,7 +15,7 @@ export default async (users: TestUser[] | undefined = undefined) => {
         const user = users[i];
 
         // Generate a random count between 3 and 5
-        const count = (3 + Math.random() * 3) | 0;
+        const count = (storesMin + Math.random() * (storesMax - storesMin + 1)) | 0;
 
         // Loop for the generated count
         for (let j = 0; j < count; j++) {
