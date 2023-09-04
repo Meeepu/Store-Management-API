@@ -4,8 +4,6 @@ info:
   version: 2.0.0
   description: A simple API that allows users to create and manage their own stores.
   termsOfService: http://swagger.io/terms/
-servers:
-  - url: http://localhost:8080
 tags:
   - name: auth
     description: User authentication
